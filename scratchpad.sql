@@ -17,3 +17,16 @@ select name, count(*) as views
 
 -- 3.
 select count(dt) from (select date(time) as dt from log group by date(time)) as sq;
+select dt, status, count(status) from (select date(time) as dt, status from log) as sq group by dt, status;
+
+create view daily_status_log as
+  select dt, status, count(status) as hits
+    from (select date(time) as dt, status from log) as sq
+    group by dt, status;
+
+select dt, sum(case when status like '%404 NOT FOUND%' THEN hits END) / sum(hits) from daily_status_log group by dt;
+
+select dt, error_freq
+  from (select dt, sum(case when status like '%404 NOT FOUND%' THEN hits END) / sum(hits) as error_freq
+          from daily_status_log group by dt) as sq
+  where error_freq > 0.01;
