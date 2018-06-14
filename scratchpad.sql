@@ -20,11 +20,11 @@ SELECT name, COUNT(name) AS views
 
 -- 3.
 CREATE VIEW daily_status_log AS
-  SELECT dt, status, COUNT (status) AS status_count
+  SELECT dt, status, COUNT (status) AS hits
     FROM (SELECT DATA (time) AS dt, status FROM log) AS sq
     GROUP BY dt, status;
 
 SELECT dt, error_freq
-  FROM (FROM dt, SUM(CASE WHEN status LIKE '%404 NOT FOUND%' THEN status_count END) / SUM(status_count) AS error_freq
+  FROM (FROM dt, SUM(CASE WHEN status LIKE '%404 NOT FOUND%' THEN hits END) / SUM(hits) AS error_freq
           FROM daily_status_log GROUP BY dt) AS sq
   WHERE error_freq > 0.01;
