@@ -3,6 +3,7 @@
 from __future__ import print_function
 import datetime
 from contextlib import contextmanager
+import argparse
 
 import bleach
 import psycopg2 as dbdriver
@@ -122,6 +123,10 @@ def main(n_articles, pct_cutoff):
 
 
 if __name__ == '__main__':
-    n_articles = 3
-    pct_cutoff = 0.01
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--n", dest="n_articles", help="Set the number of articles displayed in report.", default=3)
+    parser.add_argument("--p", dest="pct_cutoff", help="Percent used as cutoff for error reporting.", default=0.01)
+    args = parser.parse_args()
+    n_articles = args.n_articles
+    pct_cutoff = args.pct_cutoff
     main(n_articles, pct_cutoff)
