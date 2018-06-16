@@ -19,7 +19,11 @@ directory. Then type `vagrant up`.
 2. SSH into the machine with `vagrant ssh`, then `cd /vagrant/`
 
 3. The kind folks at Udacity have already installed all the dependencies we need. All we're left to do is seeding the 
-database. to do that run `psql -d news -f newsdata.sql`
+database. to do that run:
+ ```
+gzip -d newsdata.sql.gz
+psql -d news -f newsdata.sql
+ ```
 
 4. Last step ! Now we need to create some supporting views into our news database. To do that, run `./log_report.py 
 --create_views`
