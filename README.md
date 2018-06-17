@@ -44,7 +44,9 @@ The application will display three lists of information answering the following 
 3. _On which days did more than **x**% of requests lead to errors?_
 
     To select the x, use `--p`. For example, to select 0.5%, type: `./log_report.py --p 0.005`
-    
+  
+ An example of the output of the report can be found [here](./output.txt).  
+
 ## Known Issue
 if you're running the vagrant box from a Windows machine, calling the script using `./log_report.py` may fail due to 
 DOS line endings. to solve the issue do the following inside your box:
