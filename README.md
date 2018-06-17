@@ -7,7 +7,7 @@ showcase the use of SQL.
 ### Prerequisites
 
 * [Vagrant](https://www.vagrantup.com/): It's used to setup the development environment.
-
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads): The virtualizer used to operate the development environment.
 
 ### Installing
 
@@ -26,7 +26,7 @@ psql -d news -f newsdata.sql
  ```
 
 4. Last step ! Now we need to create some supporting views into our news database. To do that, run `./log_report.py 
---create_views`
+-create_views`
 
 You're all set.
 

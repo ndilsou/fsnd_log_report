@@ -10,16 +10,16 @@ import psycopg2 as dbdriver
 
 
 @contextmanager
-def session():
+def connection():
     """
     Adds support for with statement to create and close a session.
     """
 
-    db = dbdriver.connect("dbname=news")
+    conn = dbdriver.connect("dbname=news")
     try:
-        yield db
+        yield conn
     finally:
-        db.close()
+        conn.close()
 
 
 def create_daily_status_log_view():
@@ -39,12 +39,12 @@ CREATE VIEW daily_status_log AS
     """
 
     print("adding daily_status_log view to news database...")
-    with session() as sess:
-        c = sess.cursor()
-        try:
-            c.execute(query)
-        except dbdriver.ProgrammingError as e:
-            print("Error: ", e)
+    with connection() as conn:
+        with conn, conn.cursor() as cur:
+            try:
+                cur.execute(query)
+            except dbdriver.ProgrammingError as e:
+                print("Error: ", e)
     print("done.")
 
 
@@ -60,13 +60,13 @@ def fetch_most_popular_articles(n):
     query = """
     SELECT articles.title, COUNT(articles.title) AS hits
       FROM articles, log
-      WHERE path LIKE '%%' || slug || '%%'
+      WHERE path = '/article/' || slug
       GROUP BY articles.title
       ORDER BY hits DESC
       limit %s;"""
 
-    with session() as sess:
-        c = sess.cursor()
+    with connection() as conn:
+        c = conn.cursor()
         c.execute(query, (n,))
         records = c.fetchall()
 
@@ -82,14 +82,14 @@ def fetch_authors_by_popularity():
 
     query = """
 SELECT name, COUNT(name) AS views
-  FROM (SELECT name, slug FROM articles, authors WHERE author = authors.id) 
+  FROM (SELECT name, slug FROM articles, authors WHERE author = authors.id)
     AS sq, log
-  WHERE path LIKE '%' || sq.slug || '%'
+  WHERE path = '/article/' || sq.slug
   GROUP BY name
   ORDER BY views DESC;"""
 
-    with session() as sess:
-        c = sess.cursor()
+    with connection() as conn:
+        c = conn.cursor()
         c.execute(query)
         records = c.fetchall()
 
@@ -107,17 +107,17 @@ def fetch_error_summary(cutoff):
 
     query = """
 SELECT dt, error_freq
-  FROM (SELECT dt, SUM(CASE 
-                        WHEN status LIKE '%%404 NOT FOUND%%' 
-                        THEN hits END) / SUM(hits) 
+  FROM (SELECT dt, SUM(CASE
+                        WHEN status LIKE '%%404 NOT FOUND%%'
+                        THEN hits END) / SUM(hits)
             AS error_freq
           FROM daily_status_log GROUP BY dt) AS sq
   WHERE error_freq > %(pct)s;
 
     """
 
-    with session() as sess:
-        c = sess.cursor()
+    with connection() as conn:
+        c = conn.cursor()
         c.execute(query, {"pct": cutoff})
         records = c.fetchall()
 
@@ -214,8 +214,8 @@ def main(n_articles, pct_cutoff):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("LogReport",
-                                     description="A Simple information summary "
-                                                 "for the news database.")
+                                     description="A Simple information summary"
+                                                 " for the news database.")
     parser.add_argument("--n", dest="n_articles",
                         help="Set the number of articles displayed in report.",
                         default=3)
